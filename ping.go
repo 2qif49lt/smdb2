@@ -35,16 +35,18 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 	}
 
 	p.RunLoop()
+	defer p.Stop()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
+	defer signal.Stop(c)
 
 	for {
 		select {
 		case <-c:
 			fmt.Println("get interrupted")
-			break
+			return
 		case res := <-onRecv:
 			if _, ok := results[res.addr.String()]; ok {
 				results[res.addr.String()] = res
@@ -66,9 +68,7 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 			if err := p.Err(); err != nil {
 				fmt.Println("Ping failed:", err)
 			}
-			break
+			return
 		}
 	}
-	signal.Stop(c)
-	p.Stop()
 }
