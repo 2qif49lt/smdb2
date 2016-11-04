@@ -13,7 +13,7 @@ func db2Roution(conn string) {
 
 		cnt, err := readCount(conn)
 		if err != nil {
-			dbqueue <- cnt
+			cntqueue <- cnt
 		}
 	}
 }

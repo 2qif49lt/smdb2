@@ -9,14 +9,15 @@ import (
 )
 
 var (
-	host     = flag.String("host", "", "host to connect")
-	port     = flag.Int("port", 50110, "port to connect")
-	usrname  = flag.String("user", "", "user name")
-	password = flag.String("pwd", "", "password")
-	dbname   = flag.String("db", "", "database to connect")
-	httpport = flag.Int("srvport", 12345, "srv port for listening")
-	tarip    = flag.String("tarip", "", "target ip to ping,split by ,")
-	payload  = flag.Int("pingload", 1024, "size in bytes of the payload to ping, at least 8")
+	host                   = flag.String("host", "", "host to connect")
+	port                   = flag.Int("port", 50110, "port to connect")
+	usrname                = flag.String("user", "", "user name")
+	password               = flag.String("pwd", "", "password")
+	dbname                 = flag.String("db", "", "database to connect")
+	httpport               = flag.Int("srvport", 12345, "srv port for listening")
+	tarip                  = flag.String("tarip", "", "target ip to ping,split by ,")
+	payload                = flag.Int("pingload", 1024, "size in bytes of the payload to ping, at least 8")
+	tars     []*net.IPAddr = nil
 )
 
 func usage() {
@@ -52,7 +53,7 @@ func checkArge() {
 	flag.Usage = usage
 	flag.Parse()
 
-	tars := checkTars(*tarip)
+	tars = checkTars(*tarip)
 
 	if *dbname == "" || *host == "" || *port == 0 ||
 		*usrname == "" || *password == "" || *dbname == "" ||
@@ -71,8 +72,8 @@ func main() {
 	go boltWriteRoution()
 	go pingRoution(tars)
 
-	err := httpSrv(httpport)
+	err := httpSrv(*httpport)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		fmt.Println("httpSrv: ", err)
 	}
 }

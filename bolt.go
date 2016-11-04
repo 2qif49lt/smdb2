@@ -32,14 +32,13 @@ func dbWriteDb2(cnt dbcount) error {
 	}
 	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("db2"))
 		if err != nil {
 			return err
 		}
 
-		val := ""
-		val, err = json.Marshal(cnt)
+		val, err := json.Marshal(cnt)
 		if err != nil {
 			return err
 		}
@@ -56,13 +55,13 @@ func dbWritePing(ping *pingrsp) error {
 	}
 	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(fmt.Sprintf(`ping-%s`, ping.Tar)))
 		if err != nil {
 			return err
 		}
 
-		err = b.Put([]byte(ping.T.Format(`20060102150405`)), fmt.Sprintf(`%d`, ping.Ms))
+		err = b.Put([]byte(ping.T.Format(`20060102150405`)), []byte(fmt.Sprintf(`%d`, ping.Ms)))
 		return err
 	})
 }
