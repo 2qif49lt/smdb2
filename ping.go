@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+type response struct {
+	addr *net.IPAddr
+	rtt  time.Duration
+}
+
 func pingRoution(tars []*net.IPAddr, payload int) {
 	p := fastping.NewPinger()
 	p.Size = payload
@@ -46,11 +51,15 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 				results[res.addr.String()] = res
 			}
 		case <-onIdle:
+			now := time.Now()
+
 			for host, r := range results {
 				if r == nil {
-					fmt.Printf("%s : unreachable %v\n", host, time.Now())
+					fmt.Printf("%s : unreachable %v\n", host, now)
+					pingqueue <- &pingrsp{now, host, -1}
 				} else {
-					fmt.Printf("%s : %v %v\n", host, r.rtt, time.Now())
+					fmt.Printf("%s : %v %v\n", host, r.rtt/time.Millisecond, now)
+					pingqueue <- &pingrsp{now, host, int(r.rtt / time.Millisecond)}
 				}
 				results[host] = nil
 			}

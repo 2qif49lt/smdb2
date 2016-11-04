@@ -13,9 +13,10 @@ type dbcount struct {
 
 var cntqueue = make(chan dbcount, 100)
 
-type response struct {
-	addr *net.IPAddr
-	rtt  time.Duration
+type pingrsp struct {
+	T   time.Time `json:"t"`
+	Tar string    `json:"tar"`
+	Ms  int       `json:"ms"`
 }
 
-var pingqueue = make(chan *response, 100)
+var pingqueue = make(chan *pingrsp, 100)
