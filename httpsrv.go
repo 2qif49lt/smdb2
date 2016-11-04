@@ -1,4 +1,4 @@
-package smdb2
+package main
 
 import (
 	"fmt"
