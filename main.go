@@ -70,7 +70,7 @@ func main() {
 
 	go db2Roution(conn)
 	go boltWriteRoution()
-	go pingRoution(tars)
+	go pingRoution(tars, payload)
 
 	err := httpSrv(*httpport)
 	if err != nil {

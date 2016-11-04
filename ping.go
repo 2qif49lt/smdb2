@@ -27,7 +27,7 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 
 	onRecv, onIdle := make(chan *response), make(chan bool)
 
-	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+	p.OnRecv = func(addr *net.IPAddr, t time.Duration) {
 		onRecv <- &response{addr: addr, rtt: t}
 	}
 	p.OnIdle = func() {
@@ -63,7 +63,7 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 				results[host] = nil
 			}
 		case <-p.Done():
-			if err = p.Err(); err != nil {
+			if err := p.Err(); err != nil {
 				fmt.Println("Ping failed:", err)
 			}
 			break
