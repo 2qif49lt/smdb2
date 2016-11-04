@@ -19,11 +19,11 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 	p := fastping.NewPinger()
 	p.Size = payload
 
+	results := make(map[string]*response)
 	for _, addr := range tars {
 		p.AddIPAddr(addr)
+		results[addr.String()] = nil
 	}
-
-	results := make(map[string]*response)
 
 	onRecv, onIdle := make(chan *response), make(chan bool)
 
@@ -56,10 +56,8 @@ func pingRoution(tars []*net.IPAddr, payload int) {
 
 			for host, r := range results {
 				if r == nil {
-					fmt.Printf("%s : unreachable %v\n", host, now)
 					pingqueue <- &pingrsp{now, host, -1}
 				} else {
-					fmt.Printf("%s : %v %v\n", host, r.rtt/time.Millisecond, now)
 					pingqueue <- &pingrsp{now, host, int(r.rtt / time.Millisecond)}
 				}
 				results[host] = nil

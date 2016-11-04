@@ -7,6 +7,12 @@ import (
 )
 
 func boltWriteRoution() {
+	db, err := bolt.Open("sm.db", 0600, nil)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
 	for {
 		select {
 		case cnt := <-cntqueue:
@@ -25,13 +31,7 @@ func boltWriteRoution() {
 
 }
 
-func dbWriteDb2(cnt dbcount) error {
-	db, err := bolt.Open("sm.db", 0600, nil)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
+func dbWriteDb2(db *bolt.DB, cnt dbcount) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("db2"))
 		if err != nil {
@@ -43,25 +43,17 @@ func dbWriteDb2(cnt dbcount) error {
 			return err
 		}
 
-		err = b.Put([]byte(cnt.T.Format(`20060102150405`)), val)
-		return err
+		return b.Put([]byte(cnt.T.Format(timekeyformat)), val)
 	})
 }
 
-func dbWritePing(ping *pingrsp) error {
-	db, err := bolt.Open("sm.db", 0600, nil)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
+func dbWritePing(db *bolt.DB, ping *pingrsp) error {
 	return db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(fmt.Sprintf(`ping-%s`, ping.Tar)))
 		if err != nil {
 			return err
 		}
 
-		err = b.Put([]byte(ping.T.Format(`20060102150405`)), []byte(fmt.Sprintf(`%d`, ping.Ms)))
-		return err
+		return b.Put([]byte(ping.T.Format(timekeyformat)), []byte(fmt.Sprintf(`%d`, ping.Ms)))
 	})
 }

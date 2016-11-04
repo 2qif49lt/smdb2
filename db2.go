@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"database/sql"
 	"fmt"
@@ -12,6 +13,7 @@ func db2Roution(conn string) {
 		time.Sleep(time.Minute)
 
 		cnt, err := readCount(conn)
+		fmt.Println(cnt, err)
 		if err != nil {
 			cntqueue <- cnt
 		}
@@ -47,3 +49,4 @@ func readCount(conn string) (dbcount, error) {
 
 	return cnt, nil
 }
+*/

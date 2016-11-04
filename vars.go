@@ -20,3 +20,7 @@ type pingrsp struct {
 }
 
 var pingqueue = make(chan *pingrsp, 100)
+
+const (
+	timekeyformat = "20060102150405"
+)
