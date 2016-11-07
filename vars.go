@@ -13,14 +13,25 @@ type dbcount struct {
 
 var cntqueue = make(chan dbcount, 100)
 
-type pingrsp struct {
-	T   time.Time `json:"t"`
-	Tar string    `json:"tar"`
-	Ms  int       `json:"ms"`
+const (
+	timekeyformat = "200601021504"
+	boltdbname    = "sm.db"
+)
+
+type pingReduceRsp struct {
+	T time.Time `json:"t"`
+
+	Tar string `json:"tar"`
+
+	Ave  int `json:"ave"`
+	Min  int `json:"min"`
+	Max  int `json:"max"`
+	Send int `json:"send"`
+	Rev  int `json:"rev"`
 }
 
-var pingqueue = make(chan *pingrsp, 100)
+var pingReduceQueue = make(chan *pingReduceRsp, 100)
 
 const (
-	timekeyformat = "20060102150405"
+	version = "1.0.0"
 )

@@ -1,6 +1,5 @@
 package main
 
-/*
 import (
 	"database/sql"
 	"fmt"
@@ -49,4 +48,3 @@ func readCount(conn string) (dbcount, error) {
 
 	return cnt, nil
 }
-*/
