@@ -70,11 +70,11 @@ func checkArge() {
 func main() {
 	checkArge()
 
-	//	conn := fmt.Sprintf(`DATABASE=%s; HOSTNAME=%s; PORT=%d; PROTOCOL=TCPIP; UID=%s; PWD=%s;`,
-	//		*dbname, *host, *port, *usrname, *password)
+	conn := fmt.Sprintf(`DATABASE=%s; HOSTNAME=%s; PORT=%d; PROTOCOL=TCPIP; UID=%s; PWD=%s;`,
+		*dbname, *host, *port, *usrname, *password)
 
 	go boltWriteRoution()
-	//go db2Roution(conn)
+	go db2Roution(conn)
 	go pingRoution(tars, *payload)
 
 	err := httpSrv(*httpport)
