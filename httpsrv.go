@@ -152,7 +152,7 @@ END:
 	w.Write(ret)
 }
 
-func db2Handler(w http.ResponseWriter, req *http.Request) {
+func db2StatusHandler(w http.ResponseWriter, req *http.Request) {
 	msg := &httprsp{}
 	code := FAIL
 	errdesc := ""
@@ -233,7 +233,7 @@ func regRouter() *mux.Router {
 	r.HandleFunc("/sm", smHandler)
 	r.HandleFunc("/ping/last", pingLastHandler)
 	r.HandleFunc("/ping/{tar}", pingHandler)
-	r.HandleFunc("/db2/status", db2Handler)
+	r.HandleFunc("/db2/status", db2StatusHandler)
 
 	return r
 }

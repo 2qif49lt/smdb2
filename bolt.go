@@ -17,6 +17,7 @@ func boltWriteRoution() {
 			if err != nil {
 				fmt.Println(err)
 			}
+
 		case prsp := <-pingReduceQueue:
 			err := dbWritePing(prsp)
 			if err != nil {
@@ -28,7 +29,7 @@ func boltWriteRoution() {
 
 }
 
-func dbWriteDb2(cnt dbcount) error {
+func dbWriteDb2(cnt *dbcount) error {
 	db, err := bolt.Open(boltdbname, 0600, nil)
 	if err != nil {
 		return err

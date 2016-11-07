@@ -11,7 +11,7 @@ type dbcount struct {
 	Fail    int       `json:"fail"`
 }
 
-var cntqueue = make(chan dbcount, 100)
+var cntqueue = make(chan *dbcount, 100)
 
 const (
 	timekeyformat = "200601021504"
