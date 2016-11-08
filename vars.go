@@ -11,11 +11,17 @@ type dbcount struct {
 	Fail    int       `json:"fail"`
 }
 
-var cntqueue = make(chan *dbcount, 100)
-
 const (
 	timekeyformat = "200601021504"
 	boltdbname    = "sm.db"
+	version       = "1.0.0"
+)
+
+var (
+	cntqueue        = make(chan *dbcount, 100)
+	pingReduceQueue = make(chan *pingReduceRsp, 100)
+	ssnmgr          = newssnMgr()
+	srvStartTime    = time.Now()
 )
 
 type pingReduceRsp struct {
@@ -29,9 +35,3 @@ type pingReduceRsp struct {
 	Send int `json:"send"`
 	Rev  int `json:"rev"`
 }
-
-var pingReduceQueue = make(chan *pingReduceRsp, 100)
-
-const (
-	version = "1.0.0"
-)

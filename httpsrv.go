@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"html/template"
 	"net/http"
 	"strconv"
 	"time"
@@ -216,6 +217,33 @@ END:
 	w.Write(ret)
 }
 
+type sendTmpl struct {
+	StartTimeMilloSec int
+	CurrentMode       string
+	Msg               string
+}
+
+func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	email := r.FormValue("email")
+
+	data := sendTmpl{
+		int(srvStartTime.Unix() * 1000),
+		"normal",
+		"",
+	}
+
+	if r.Method == "POST" && email != "" {
+		data.Msg = fmt.Sprintf("OK %s,Pls check your email box!", email)
+	}
+	if tmpl, err := template.ParseFiles("tmpl/send.html"); err == nil {
+
+		tmpl.Execute(w, data)
+	} else {
+		w.Write([]byte(err.Error()))
+	}
+}
+
 func httpSrv(port int) error {
 	http.Handle("/", regRouter())
 
@@ -234,6 +262,9 @@ func regRouter() *mux.Router {
 	r.HandleFunc("/ping/last", pingLastHandler)
 	r.HandleFunc("/ping/{tar}", pingHandler)
 	r.HandleFunc("/db2/status", db2StatusHandler)
-
+	//	r.HandleFunc("/auth/switch/{authid}", f)
+	r.HandleFunc("/admin/send.go", adminSendUrlHandler)
+	r.NewRoute().PathPrefix("/admin/").Handler(
+		http.StripPrefix("/admin/", http.FileServer(http.Dir("static"))))
 	return r
 }

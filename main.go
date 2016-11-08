@@ -17,7 +17,9 @@ var (
 	httpport               = flag.Int("srvport", 12345, "srv port for listening")
 	tarips                 = flag.String("tarips", "", "target ip to ping,split by ,")
 	payload                = flag.Int("pingload", 1024, "size in bytes of the payload to ping, at least 8")
+	smtpcfg                = flag.String("smtp", "config.toml", "smtp config file path")
 	tars     []*net.IPAddr = nil
+	cfg      *ConfigFile   = nil
 )
 
 func usage() {
@@ -54,6 +56,12 @@ func checkTars(tarips string) ([]*net.IPAddr, error) {
 	}
 	return naddr, nil
 }
+
+func checkConfig() error {
+	cfg = &ConfigFile{Filename: *smtpcfg}
+	return cfg.Load()
+}
+
 func checkArge() {
 	flag.Usage = usage
 	flag.Parse()
@@ -70,12 +78,18 @@ func checkArge() {
 func main() {
 	checkArge()
 
+	if err := checkConfig(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	conn := fmt.Sprintf(`DATABASE=%s; HOSTNAME=%s; PORT=%d; PROTOCOL=TCPIP; UID=%s; PWD=%s;`,
 		*dbname, *host, *port, *usrname, *password)
 
 	go boltWriteRoution()
 	go db2Roution(conn)
 	go pingRoution(tars, *payload)
+	go sessionAliveRountion()
 
 	err := httpSrv(*httpport)
 	if err != nil {
