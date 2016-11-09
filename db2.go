@@ -18,7 +18,7 @@ func db2Roution(conn string) {
 }
 
 func readCount(conn string) (*dbcount, error) {
-	return nil, fmt.Errorf("test")
+	//return nil, fmt.Errorf("test")
 
 	cnt := &dbcount{}
 	cnt.T = time.Now()
