@@ -10,7 +10,6 @@ import (
 func db2Roution(conn string) {
 	for {
 		time.Sleep(time.Minute)
-
 		cnt, err := readCount(conn)
 		if err == nil {
 			cntqueue <- cnt
@@ -19,6 +18,8 @@ func db2Roution(conn string) {
 }
 
 func readCount(conn string) (*dbcount, error) {
+	return nil, fmt.Errorf("test")
+
 	cnt := &dbcount{}
 	cnt.T = time.Now()
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -22,14 +23,20 @@ const (
 	ERR_FORMAT
 	ERR_RANGE
 	ERR_INTERNAL
+	ERR_AUTH
+	ERR_SWITCH_MODE
+	ERR_RESTART
 )
 
 var ERRMSG = map[int]string{
-	SUCC:         "成功",
-	FAIL:         "失败",
-	ERR_FORMAT:   "参数有误",
-	ERR_RANGE:    "选择范围有误",
-	ERR_INTERNAL: "内部错误",
+	SUCC:            "成功",
+	FAIL:            "失败",
+	ERR_FORMAT:      "参数有误",
+	ERR_RANGE:       "选择范围有误",
+	ERR_INTERNAL:    "内部错误",
+	ERR_AUTH:        "授权非法",
+	ERR_SWITCH_MODE: "切换模式失败",
+	ERR_RESTART:     "重启服务失败",
 }
 
 func smHandler(w http.ResponseWriter, req *http.Request) {
@@ -223,6 +230,33 @@ type sendTmpl struct {
 	Msg               string
 }
 
+const (
+	emailTmplText = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+　<head>
+　　<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+　　<title>{{.Title}}</title>
+　　<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ </head>
+ <body style="margin: 0; padding: 0;">
+　 <table border="0" cellpadding="0" cellspacing="0" width="100%">
+　　 <tr> 
+　　　 <td> <a href="{{.Url}}" target="_blank" >{{.Url}}</a><br>the one-time address will become invalid after 10 minutes
+        <br>@2qif49lt
+      </td>
+　　 </tr>
+　 </table>
+  </body>
+</html>`
+)
+
+type emailTmplStuct struct {
+	Title string
+	Url   string
+}
+
+var emailTmpl, _ = template.New("emailtext").Parse(emailTmplText)
+
 func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	email := r.FormValue("email")
@@ -233,15 +267,75 @@ func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 		"",
 	}
 
-	if r.Method == "POST" && email != "" {
-		data.Msg = fmt.Sprintf("OK %s,Pls check your email box!", email)
-	}
-	if tmpl, err := template.ParseFiles("tmpl/send.html"); err == nil {
+	if r.Method == "POST" && email != "" && emailTmpl != nil {
+		if checkAdminMail(email) == true {
+			id := ssnmgr.NewId()
+			para := emailTmplStuct{}
+			para.Title = "authorised address for switch operation"
+			scheme := "http"
+			if r.URL.Scheme != "" {
+				scheme = r.URL.Scheme
+			}
+			para.Url = fmt.Sprintf("%s://%s/auth/switch/%s", scheme, r.Host, id)
+			sb := bytes.NewBufferString("")
+			err := emailTmpl.Execute(sb, para)
+			if err == nil {
+				content := sb.String()
+				err = sendMail2("smdb2", email, para.Title, content)
+			}
 
+			if err == nil {
+				data.Msg = fmt.Sprintf("OK %s,Pls check your email box!", email)
+			} else {
+				data.Msg = fmt.Sprintf(`FAIL,%s.check your smtp config!`, err.Error())
+			}
+		}
+	}
+	if emailTmpl == nil {
+		data.Msg = "FAIL, check you email content template!"
+	}
+
+	if tmpl, err := template.ParseFiles("tmpl/send.html"); err == nil {
 		tmpl.Execute(w, data)
 	} else {
 		w.Write([]byte(err.Error()))
 	}
+}
+
+func authUrlHandler(w http.ResponseWriter, r *http.Request) {
+	msg := &httprsp{}
+	code := FAIL
+	errdesc := ""
+	var data interface{} = nil
+	var err error = nil
+
+	vars := mux.Vars(r)
+	aid := vars["authid"]
+
+	if ssnmgr.IsExist(aid) == false {
+		code = ERR_AUTH
+		goto END
+	}
+	ssnmgr.Del(aid)
+	err = switchDb2Mode()
+	if err != nil {
+		errdesc = err.Error()
+		code = ERR_SWITCH_MODE
+		goto END
+	}
+	code = SUCC
+END:
+	msg.Code = code
+	msg.Msg = ERRMSG[msg.Code]
+	if errdesc != "" {
+		msg.Msg += errdesc
+	}
+	if msg.Code == SUCC {
+		msg.Data = data
+	}
+	ret, _ := json.Marshal(msg)
+
+	w.Write(ret)
 }
 
 func httpSrv(port int) error {
@@ -262,7 +356,7 @@ func regRouter() *mux.Router {
 	r.HandleFunc("/ping/last", pingLastHandler)
 	r.HandleFunc("/ping/{tar}", pingHandler)
 	r.HandleFunc("/db2/status", db2StatusHandler)
-	//	r.HandleFunc("/auth/switch/{authid}", f)
+	r.HandleFunc("/auth/switch/{authid}", authUrlHandler)
 	r.HandleFunc("/admin/send.go", adminSendUrlHandler)
 	r.NewRoute().PathPrefix("/admin/").Handler(
 		http.StripPrefix("/admin/", http.FileServer(http.Dir("static"))))

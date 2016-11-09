@@ -13,7 +13,7 @@ func init() {
 
 const (
 	validtime       = time.Minute * 10
-	session_id_size = 128
+	session_id_size = 32
 )
 
 type session struct {
@@ -61,6 +61,23 @@ func (mgr *ssnMgr) Set(id, key string, val interface{}) {
 	if s, exist := mgr.ssns[id]; exist {
 		s.alive = time.Now()
 		s.data[key] = val
+	}
+}
+
+func (mgr *ssnMgr) IsExist(id string) bool {
+	mgr.rwlock.RLock()
+	defer mgr.rwlock.RUnlock()
+
+	_, exist := mgr.ssns[id]
+	return exist
+}
+
+func (mgr *ssnMgr) Del(id string) {
+	mgr.rwlock.Lock()
+	defer mgr.rwlock.Unlock()
+
+	if _, exist := mgr.ssns[id]; exist {
+		delete(mgr.ssns, id)
 	}
 }
 

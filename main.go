@@ -9,17 +9,16 @@ import (
 )
 
 var (
-	host                   = flag.String("host", "127.0.0.1", "host to connect")
-	port                   = flag.Int("port", 50110, "port to connect")
-	usrname                = flag.String("user", "", "user name")
-	password               = flag.String("pwd", "", "password")
+	host                   = flag.String("host", "127.0.0.1", "db host to connect")
+	port                   = flag.Int("port", 50110, "db port to connect")
+	usrname                = flag.String("user", "", "db user name")
+	password               = flag.String("pwd", "", "db user'spassword")
 	dbname                 = flag.String("db", "", "database to connect")
-	httpport               = flag.Int("srvport", 12345, "srv port for listening")
+	httpport               = flag.Int("srvport", 12345, "this srv's port for listening")
 	tarips                 = flag.String("tarips", "", "target ip to ping,split by ,")
 	payload                = flag.Int("pingload", 1024, "size in bytes of the payload to ping, at least 8")
 	smtpcfg                = flag.String("smtp", "config.toml", "smtp config file path")
 	tars     []*net.IPAddr = nil
-	cfg      *ConfigFile   = nil
 )
 
 func usage() {

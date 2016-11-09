@@ -18,10 +18,11 @@ const (
 )
 
 var (
-	cntqueue        = make(chan *dbcount, 100)
-	pingReduceQueue = make(chan *pingReduceRsp, 100)
-	ssnmgr          = newssnMgr()
-	srvStartTime    = time.Now()
+	cntqueue                    = make(chan *dbcount, 100)
+	pingReduceQueue             = make(chan *pingReduceRsp, 100)
+	ssnmgr                      = newssnMgr()
+	srvStartTime                = time.Now()
+	cfg             *ConfigFile = nil
 )
 
 type pingReduceRsp struct {

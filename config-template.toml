@@ -1,0 +1,8 @@
+#管理员邮箱，用于接受授权url邮件
+admin=["someone@example.com","more@example.com"]
+
+[smtp]
+email="sender@example.com"
+pwd="xxxxxxx"
+srv="smtp.example.com"
+port=25
