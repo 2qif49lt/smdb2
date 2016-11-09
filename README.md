@@ -8,7 +8,11 @@ monitor db2 service,use for huawei mas device.
 2. config db2 include, lib path in build.sh and run.sh
 3. build
 4. config the command line parameters, config.toml especially
-5. run *NEED ROOT privilege*
+5. run 
+
+####notice
+1. *need ROOT privilege*
+2. you may consider to config the port in iptables for better security 
 
 ####web interface information
 as follows

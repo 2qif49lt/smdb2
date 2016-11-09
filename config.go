@@ -21,6 +21,9 @@ type ConfigFile struct {
 		Srv   string
 		Port  int
 	}
+	Mas struct {
+		AppXml string
+	}
 	Filename string `toml:"-"`
 }
 

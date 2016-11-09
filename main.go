@@ -17,7 +17,7 @@ var (
 	httpport               = flag.Int("srvport", 12345, "this srv's port for listening")
 	tarips                 = flag.String("tarips", "", "target ip to ping,split by ,")
 	payload                = flag.Int("pingload", 1024, "size in bytes of the payload to ping, at least 8")
-	smtpcfg                = flag.String("smtp", "config.toml", "smtp config file path")
+	cfgpath                = flag.String("cfgpath", "config.toml", "config file path")
 	tars     []*net.IPAddr = nil
 )
 
@@ -57,7 +57,7 @@ func checkTars(tarips string) ([]*net.IPAddr, error) {
 }
 
 func checkConfig() error {
-	cfg = &ConfigFile{Filename: *smtpcfg}
+	cfg = &ConfigFile{Filename: *cfgpath}
 	return cfg.Load()
 }
 
