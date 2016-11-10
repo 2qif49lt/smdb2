@@ -22,7 +22,13 @@ type ConfigFile struct {
 		Port  int
 	}
 	Mas struct {
-		AppXml string
+		Workdir string
+		Restart string
+		Appxml  struct {
+			Run     string
+			Normal  string
+			Standby string
+		}
 	}
 	Filename string `toml:"-"`
 }

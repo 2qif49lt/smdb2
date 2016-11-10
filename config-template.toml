@@ -6,3 +6,16 @@ email="sender@example.com"
 pwd="xxxxxxx"
 srv="smtp.example.com"
 port=25
+
+[mas]
+#工作目录
+workdir=""
+#重启mas服务的sh命令
+restart="./s.sh"
+
+[mas.appxml]
+#运行时的路径，切换模式时直接将normal,standby路径覆盖于此
+run="app.xml"
+#正常模式的配置文件
+normal="app-normal.xml"
+standby="app-standby.xml"

@@ -52,10 +52,10 @@
 					<div class="display-t">
 						<div class="display-tc animate-box" data-animate-effect="fadeIn">
 							<h1>Keep Running Keep Watching!</h1>
-							<h2>current: {{.CurrentMode}}.service time:</h2>
+							<h2>current mode: {{.CurrentMode}}.service time:</h2>
 							<div class="simply-countdown simply-countdown-one"></div>
 							<div class="row">
-								<h2> switch to the {{if eq  .CurrentMode "normal"}}standby{{else}}normal{{end}} mode</h2>
+								<h2> switch to the {{.ToMode}} mode</h2>
 								<form class="form-inline" id="fh5co-header-subscribe" action="" method="POST">
 									<div class="col-md-12 col-md-offset-0">
 										<div class="form-group">

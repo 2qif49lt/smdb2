@@ -227,6 +227,7 @@ END:
 type sendTmpl struct {
 	StartTimeMilloSec int
 	CurrentMode       string
+	ToMode            string
 	Msg               string
 }
 
@@ -262,12 +263,24 @@ func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 
 	data := sendTmpl{
-		int(srvStartTime.Unix() * 1000),
-		"normal",
-		"",
+		StartTimeMilloSec: int(srvStartTime.Unix() * 1000),
 	}
+	currentmode, err := getDb2Mode()
+	tomode := UNKNOWN
+	if err != nil {
+		currentmode = UNKNOWN
+		data.Msg = fmt.Sprintf("check you app.xml: %s", err.Error())
+	} else {
+		if currentmode == NORMAL {
+			tomode = STANDBY
+		} else {
+			tomode = NORMAL
+		}
+	}
+	data.CurrentMode = currentmode
+	data.ToMode = tomode
 
-	if r.Method == "POST" && email != "" && emailTmpl != nil {
+	if data.Msg == "" && r.Method == "POST" && email != "" && emailTmpl != nil {
 		if checkAdminMail(email) == true {
 			id := ssnmgr.NewId()
 			para := emailTmplStuct{}
@@ -281,7 +294,7 @@ func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 			err := emailTmpl.Execute(sb, para)
 			if err == nil {
 				content := sb.String()
-				err = sendMail2("smdb2", email, para.Title, content)
+				err = sendMail2("smdb2", email, fmt.Sprintf("mas操作邮件-切换到%s-%d", tomode, time.Now().Unix()), content)
 			}
 
 			if err == nil {
@@ -303,39 +316,32 @@ func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authUrlHandler(w http.ResponseWriter, r *http.Request) {
-	msg := &httprsp{}
-	code := FAIL
-	errdesc := ""
-	var data interface{} = nil
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Transfer-Encoding", "chunked")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	wf := flushWriter{w: w}
+	if f, ok := w.(http.Flusher); ok {
+		wf.f = f
+	}
+
 	var err error = nil
 
 	vars := mux.Vars(r)
 	aid := vars["authid"]
 
 	if ssnmgr.IsExist(aid) == false {
-		code = ERR_AUTH
-		goto END
+		wf.Send("authorization invalid")
+		return
 	}
 	ssnmgr.Del(aid)
-	err = switchDb2Mode()
-	if err != nil {
-		errdesc = err.Error()
-		code = ERR_SWITCH_MODE
-		goto END
-	}
-	code = SUCC
-END:
-	msg.Code = code
-	msg.Msg = ERRMSG[msg.Code]
-	if errdesc != "" {
-		msg.Msg += errdesc
-	}
-	if msg.Code == SUCC {
-		msg.Data = data
-	}
-	ret, _ := json.Marshal(msg)
 
-	w.Write(ret)
+	err = switchDb2Mode(wf)
+	if err != nil {
+		return
+	}
+	restartDb2Service(wf)
+
 }
 
 func httpSrv(port int) error {

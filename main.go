@@ -81,7 +81,6 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
 	conn := fmt.Sprintf(`DATABASE=%s; HOSTNAME=%s; PORT=%d; PROTOCOL=TCPIP; UID=%s; PWD=%s;`,
 		*dbname, *host, *port, *usrname, *password)
 
