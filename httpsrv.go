@@ -283,6 +283,7 @@ func adminSendUrlHandler(w http.ResponseWriter, r *http.Request) {
 	if data.Msg == "" && r.Method == "POST" && email != "" && emailTmpl != nil {
 		if checkAdminMail(email) == true {
 			id := ssnmgr.NewId()
+			fmt.Println("new id:", id)
 			para := emailTmplStuct{}
 			para.Title = "authorised address for switch operation"
 			scheme := "http"
