@@ -87,7 +87,7 @@ func restartDb2Service(wf flushWriter) error {
 		defer os.Chdir(cwd)
 	}
 
-	cmd := exec.Command(cfg.Mas.Restart)
+	cmd := exec.Command("sh", cfg.Mas.Restart)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
