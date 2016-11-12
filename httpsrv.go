@@ -360,6 +360,9 @@ func regRouter() *mux.Router {
 	})
 
 	r.HandleFunc("/sm", smHandler)
+	r.HandleFunc("/db2/ws.go", wsDB2Handler)
+	r.HandleFunc("/ping/ws.go", wsPingHandler)
+	r.HandleFunc("/admin/chart.go", pingChartHandler)
 	r.HandleFunc("/ping/last", pingLastHandler)
 	r.HandleFunc("/ping/{tar}", pingHandler)
 	r.HandleFunc("/db2/status", db2StatusHandler)

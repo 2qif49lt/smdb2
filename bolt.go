@@ -166,3 +166,36 @@ func dbReadPingLast(limit int) (error, []string) {
 	})
 	return err, rsps
 }
+
+func dbReadPingLastDay(limit int) (error, []string) {
+	db, err := bolt.Open(boltdbname, 0600, nil)
+	if err != nil {
+		return err, nil
+	}
+	defer db.Close()
+
+	rsps := make([]string, 0)
+
+	tend := time.Now().Add(time.Minute * -30).Format(timekeyformat)
+
+	err = db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(name []byte, bt *bolt.Bucket) error {
+			if strings.HasPrefix(string(name), "ping-") && bt != nil {
+				cr := bt.Cursor()
+				if cr != nil {
+					tmp := limit
+					for k, v := cr.Last(); k != nil && bytes.Compare(k, []byte(tend)) >= 0; k, v = cr.Prev() {
+						tmp--
+						if tmp < 0 {
+							break
+						}
+
+						rsps = append(rsps, string(v))
+					}
+				}
+			}
+			return nil
+		})
+	})
+	return err, rsps
+}
