@@ -34,24 +34,14 @@
 	<div class="fh5co-loader"></div>
 	
 	<div id="page">
-	<nav class="fh5co-nav" role="navigation">
-		<div class="container">
-			<div class="row">
-				<div class="col-xs-12 text-center">
-					<div id="fh5co-logo"><a href="####">SM ADMINISTRATOR<strong>.</strong></a></div>
-				</div>
-			</div>
-		</div>
-	</nav>
 
-	<header id="fh5co-header" class="fh5co-cover" role="banner" style="background-image:url(images/img_bg_1.jpg);" data-stellar-background-ratio="0.5">
-		<div class="overlay"></div>
+	<header id="fh5co-header" class="fh5co-cover" >
 		<div class="container">
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<div class="display-t">
 						<div class="display-tc animate-box" data-animate-effect="fadeIn">
-							<canvas id="canvas"></canvas>
+                            <div id="chart-list"></div>
 							<div class="row">
 								<ul class="fh5co-social-icons">
 									<li><a href="https://github.com/2qif49lt/smdb2"><i class="icon-github-with-circle"></i></a></li>
@@ -106,6 +96,9 @@
 	<script src="js/main.js"></script>
 
 	<script type="text/javascript">
+        var displaynum = 60
+        var myCharts = new Array()
+
 		var randomScalingFactor = function() {
             return Math.round(Math.random() * 100 );
         };
@@ -115,85 +108,150 @@
         var randomColor = function(opacity) {
             return 'rgba(' + randomColorFactor() + ',' + randomColorFactor() + ',' + randomColorFactor() + ',' + (opacity || '.3') + ')';
         };
+        
+        function shortTime(t){
+            var dt = new Date(t);
+            return dt.getHours().toString() + ":" + dt.getMinutes().toString();
+        }
 
-        var config = {
-            type: 'line',
-            data: {
-                labels: ["1", "2", "3", "4", "5", "6", "7"],
-                datasets: [{
-                    label: "My First dataset",
-                    data: [randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor()],
-                    fill: false,
-                    borderDash: [5, 5],
-                }, {
-                    label: "My Second dataset",
-                    data: [randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor()],
-                    fill: false,
-                    borderDash: [5, 5],
-                }, {
-                    label: "My Third dataset",
-                    data: [randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor()],
-                    fill: false,                                        
-                    hidden: true,
-
-                }, {
-                    label: "My Fourth dataset",
-                    data: [randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor(), randomScalingFactor()],
-                    fill: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                legend: {
-                    position: 'bottom',
+        function newConfig(pingrsp){
+            var newconfig = {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [],
                 },
-                hover: {
-                    mode: 'dataset'
-                },
-                scales: {
-                    xAxes: [{
-                        display: true,
-                        scaleLabel: {
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: 'bottom',
+                    },
+                    hover: {
+                        mode: 'dataset'
+                    },
+                    scales: {
+                        xAxes: [{
                             display: true,
-                            labelString: 'Time'
-                        }
-                    }],
-                    yAxes: [{
-                        display: true,
-                        scaleLabel: {
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Time'
+                            }
+                        }],
+                        yAxes: [{
                             display: true,
-                            labelString: 'Value'
-                        }
-                    }]
-                },
-                title: {
-                    display: true,
-                    text: 'Server Ping Chart'
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Value'
+                            }
+                        }]
+                    },
+                    title: {
+                        display: true,
+                        text: pingrsp.tar
+                    }
                 }
+            };
+
+            var bfirst = true;
+            for(f in pingrsp){
+                if (f == 't' || f == 'tar'){
+                    continue;
+                }
+
+                var newDataset = {
+                    label: f,
+                    fill: false,
+                    data: [],
+                    hidden: true,
+                };
+                if (f == 'ave'){
+                    newDataset.hidden = false;
+                }
+                if (bfirst == false){
+                    newDataset.borderDash = [5,5];
+                }
+                newconfig.data.datasets.push(newDataset);
+
+                bfirst = false;
             }
-        };
 
-        $.each(config.data.datasets, function(i, dataset) {
-            var background = randomColor(0.5);
-            dataset.borderColor = background;
-            dataset.backgroundColor = background;
-            dataset.pointBorderColor = background;
-            dataset.pointBackgroundColor = background;
-            dataset.pointBorderWidth = 1;
-        });
-   		window.onload = function() {
-            var ctx = document.getElementById("canvas").getContext("2d");
-            window.myLine = new Chart(ctx, config);
-        };
-		
+            $.each(newconfig.data.datasets, function(i, dataset) {
+                var background = randomColor(0.5);
+                dataset.borderColor = background;
+                dataset.backgroundColor = background;
+                dataset.pointBorderColor = background;
+                dataset.pointBackgroundColor = background;
+                dataset.pointBorderWidth = 1;
+            });
 
-		function moveChart(chart, newData) {
-		    chart.data.labels.push(Math.floor(newData[0]).toString()); // add new label at end
-		    chart.data.labels.splice(0, 1); // remove first label
+            return newconfig;
+        }
+        
+        function findChart(pingrsp){
+            for(i in myCharts){
+                if (myCharts[i].tar == pingrsp.tar)
+                    return myCharts[i].chart;
+            }
+            return null;
+        }
+        function getChart(pingrsp){
+            var chart = findChart(pingrsp);
+            if (chart == null){
+                var lst = document.getElementById("chart-list");
+                var canv = document.createElement('canvas');
+                canv.id = pingrsp.tar;
+
+                lst.appendChild(canv); 
+
+                var ctx = canv.getContext("2d");
+                var nc = newConfig(pingrsp);
+
+                chart = new Chart(ctx, nc);
+                myCharts.push({
+                    tar:pingrsp.tar,
+                    chart:chart,
+                });
+            }
+
+            return chart;
+        }
+
+        function pushChartDataWithOutUpdate(chart,pingrsp){
+            chart.data.labels.push(shortTime(pingrsp.t))
+            if(chart.data.labels.length > displaynum){
+                 chart.data.labels.splice(0, 1);  
+            }
+
+            chart.data.datasets.forEach(function(dataset, index) {
+                for (f in pingrsp){
+                    if (dataset.label == f){
+                        dataset.data.push(pingrsp[f]);
+                        if(chart.data.labels.length > displaynum){
+                            dataset.data.splice(0, 1);  
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        function updateChart(chart){
+            if (chart != null){
+                chart.update();
+            }
+        }
+
+		function moveChart(chart, xtime,newData) {
+		    chart.data.labels.push(xtime);  
+            if(chart.data.labels.length > displaynum){
+                 chart.data.labels.splice(0, 1);  
+            }
 
 		    chart.data.datasets.forEach(function(dataset, index) {
-		        dataset.data.push(newData[index]); // add new data at end
-		        dataset.data.splice(0, 1); // remove first data point
+		        dataset.data.push(newData[index]);  
+                if(chart.data.labels.length > displaynum){
+                    dataset.data.splice(0, 1);  
+                }
 		    });
 
 		    chart.update();
@@ -213,7 +271,13 @@
         }
         ws.onmessage = function(evt) {
             console.log("RESPONSE: " + evt.data);
-            moveChart(myLine,[randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()])
+            var pingrsp = JSON.parse(evt.data);
+            var dt = new Date(pingrsp.t);
+            var xtime = dt.getHours().toString() + ":" + dt.getMinutes().toString();
+
+            var chart = getChart(pingrsp);
+            pushChartDataWithOutUpdate(chart,pingrsp);
+            updateChart(chart,pingrsp);
         }
 
         setInterval(function (){

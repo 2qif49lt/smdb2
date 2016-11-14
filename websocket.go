@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -25,13 +26,46 @@ func wsPingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
-	for {
-		_, _, err := c.ReadMessage()
-		if err != nil {
-			fmt.Println("read:", err)
-			break
-		}
 
+	err, rsps := dbReadPingLastHour(60)
+	if err == nil {
+		for idx := len(rsps) - 1; idx >= 0; idx-- {
+			err = c.WriteMessage(websocket.TextMessage, []byte(rsps[idx]))
+			if err != nil {
+				fmt.Println("dbReadPingLastHour WriteMessage", err)
+				break
+			}
+		}
+	}
+	sub := puber.SubscribeTopic(func(v interface{}) bool {
+		_, ok := v.(*pingReduceRsp)
+		return ok
+	})
+	defer puber.Evict(sub)
+
+	for {
+		select {
+		case data := <-sub:
+			pingrsp := data.(*pingReduceRsp)
+
+			val, err := json.Marshal(pingrsp)
+			if err != nil {
+				fmt.Println("marshl", err)
+				return
+			}
+
+			err = c.WriteMessage(websocket.TextMessage, val)
+			if err != nil {
+				fmt.Println("writemessage", err)
+				return
+			}
+		default:
+			_, _, err := c.ReadMessage()
+			if err != nil {
+				fmt.Println("read:", err)
+				return
+			}
+		}
 	}
 }
 

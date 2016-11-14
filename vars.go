@@ -11,6 +11,18 @@ type dbcount struct {
 	Fail    int       `json:"fail"`
 }
 
+type pingReduceRsp struct {
+	T time.Time `json:"t"`
+
+	Tar string `json:"tar"`
+
+	Ave  int `json:"ave"`
+	Min  int `json:"min"`
+	Max  int `json:"max"`
+	Send int `json:"send"`
+	Rev  int `json:"rev"`
+}
+
 const (
 	timekeyformat = "200601021504"
 	boltdbname    = "sm.db"
@@ -23,16 +35,5 @@ var (
 	ssnmgr                      = newssnMgr()
 	srvStartTime                = time.Now()
 	cfg             *ConfigFile = nil
+	puber                       = NewPublisher(time.Millisecond*100, 100)
 )
-
-type pingReduceRsp struct {
-	T time.Time `json:"t"`
-
-	Tar string `json:"tar"`
-
-	Ave  int `json:"ave"`
-	Min  int `json:"min"`
-	Max  int `json:"max"`
-	Send int `json:"send"`
-	Rev  int `json:"rev"`
-}

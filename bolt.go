@@ -17,12 +17,14 @@ func boltWriteRoution() {
 			if err != nil {
 				fmt.Println(err)
 			}
+			puber.Publish(cnt)
 
 		case prsp := <-pingReduceQueue:
 			err := dbWritePing(prsp)
 			if err != nil {
 				fmt.Println(err)
 			}
+			puber.Publish(prsp)
 		}
 
 	}
@@ -167,7 +169,7 @@ func dbReadPingLast(limit int) (error, []string) {
 	return err, rsps
 }
 
-func dbReadPingLastDay(limit int) (error, []string) {
+func dbReadPingLastHour(limit int) (error, []string) {
 	db, err := bolt.Open(boltdbname, 0600, nil)
 	if err != nil {
 		return err, nil
@@ -176,7 +178,7 @@ func dbReadPingLastDay(limit int) (error, []string) {
 
 	rsps := make([]string, 0)
 
-	tend := time.Now().Add(time.Minute * -30).Format(timekeyformat)
+	tend := time.Now().Add(time.Minute * -60 * 24).Format(timekeyformat)
 
 	err = db.View(func(tx *bolt.Tx) error {
 		return tx.ForEach(func(name []byte, bt *bolt.Bucket) error {
