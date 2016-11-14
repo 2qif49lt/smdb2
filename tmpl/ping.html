@@ -42,11 +42,6 @@
 					<div class="display-t">
 						<div class="display-tc animate-box" data-animate-effect="fadeIn">
                             <div id="chart-list"></div>
-							<div class="row">
-								<ul class="fh5co-social-icons">
-									<li><a href="https://github.com/2qif49lt/smdb2"><i class="icon-github-with-circle"></i></a></li>
-								</ul>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -262,11 +257,16 @@
             console.log("OPEN");
         }
          ws.onclose = function(evt) {
-            myLine.options.title.text = "SERVER CLOSE! " 
+            for (i in myCharts){
+                myCharts[i].chart.options.title.text += "SERVER CLOSE!" 
+            }
             ws = null;
         }
         ws.onerror = function(evt) {
-            myLine.options.title.text = "READ FAIL! " + evt.data
+            for (i in myCharts){
+                 myCharts[i].chart.options.title.text += ("READ FAIL! " + evt.data)
+            }
+
             ws = null;
         }
         ws.onmessage = function(evt) {
