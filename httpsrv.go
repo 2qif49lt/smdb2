@@ -362,7 +362,8 @@ func regRouter() *mux.Router {
 	r.HandleFunc("/sm", smHandler)
 	r.HandleFunc("/db2/ws.go", wsDB2Handler)
 	r.HandleFunc("/ping/ws.go", wsPingHandler)
-	r.HandleFunc("/admin/chart.go", pingChartHandler)
+	r.HandleFunc("/chart/ping.go", pingChartHandler)
+	r.HandleFunc("/chart/db2.go", dbChartHandler)
 	r.HandleFunc("/ping/last", pingLastHandler)
 	r.HandleFunc("/ping/{tar}", pingHandler)
 	r.HandleFunc("/db2/status", db2StatusHandler)
@@ -370,5 +371,8 @@ func regRouter() *mux.Router {
 	r.HandleFunc("/admin/send.go", adminSendUrlHandler)
 	r.NewRoute().PathPrefix("/admin/").Handler(
 		http.StripPrefix("/admin/", http.FileServer(http.Dir("static"))))
+	r.NewRoute().PathPrefix("/chart/").Handler(
+		http.StripPrefix("/chart/", http.FileServer(http.Dir("static"))))
+
 	return r
 }

@@ -37,7 +37,7 @@
 
 	<header id="fh5co-header" class="fh5co-cover" >
 		<div class="container">
-            <div class="row"><center>x轴为最近1小时的每分钟网络ping值情况。 ave平均，min最小，max最大，send ping的次数，rev接到回应次数<br>曲线振动幅度出现异常时，点开其他曲线对比查看！</center></div>
+            <div class="row"><center>图表为该服务器到短信运营商网关的网络情况<br>图表数据默认为1小时的每分钟网络ping值的统计情况。 ave曲线代表一分钟内的平均值，min曲线代表一分钟内的最小值，max曲线代表一分钟内的最大值，send代表一分钟内的ping的次数，rev一分钟内接到回应次数<br>曲线振动幅度出现异常时（比如ping值有倍数级级别变化”ping值10内时变成30-100“；正常值30左右变化为60；正常变为-1为网络完全无响应；），点开其他曲线对比查看！<br>如出现丢包（相同时间rev字数与send差距10%以上等）请联系 </center></div>
 			<div class="row">
 				<div class="col-md-12 text-center">
 					<div class="display-t">
@@ -78,7 +78,7 @@
 	<script src="js/main.js"></script>
 
 	<script type="text/javascript">
-        var displaynum = 60
+        var displaynum = {{.Num}}
         var myCharts = new Array()
 
 		var randomScalingFactor = function() {
@@ -107,6 +107,9 @@
                     responsive: true,
                     legend: {
                         position: 'bottom',
+                    },
+                    tooltips: {
+                    mode: 'label',
                     },
                     hover: {
                         mode: 'dataset'
@@ -239,7 +242,7 @@
 		    chart.update();
 		}
 
-        var ws = new WebSocket("{{.}}");
+        var ws = new WebSocket("{{.Ws}}");
         ws.onopen = function(evt) {
             console.log("OPEN");
         }
@@ -256,11 +259,17 @@
 
             ws = null;
         }
+        var bfirstmsg = true;
+        var ct = 0
         ws.onmessage = function(evt) {
-            console.log("RESPONSE: " + evt.data);
+            if (bfirstmsg){
+                bfirstmsg = false;
+
+                ws.send(displaynum.toString());
+                return
+            }
+            console.log("RESPONSE: " + evt.data,ct++);
             var pingrsp = JSON.parse(evt.data);
-            var dt = new Date(pingrsp.t);
-            var xtime = dt.getHours().toString() + ":" + dt.getMinutes().toString();
 
             var chart = getChart(pingrsp);
             pushChartDataWithOutUpdate(chart,pingrsp);
@@ -270,7 +279,7 @@
         setInterval(function (){
             if(ws != null)
                 ws.send("alive")
-        }, 2500);
+        }, 10*1000);
 	</script>
 	</body>
 </html>

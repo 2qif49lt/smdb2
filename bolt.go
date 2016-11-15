@@ -105,6 +105,7 @@ func dbReadPing(tar string, from, to string, limit int) (error, []string) {
 	})
 	return err, rsps
 }
+
 func dbReadDb2(from, to string, limit int) (error, []string) {
 	db, err := bolt.Open(boltdbname, 0600, nil)
 	if err != nil {
@@ -125,6 +126,60 @@ func dbReadDb2(from, to string, limit int) (error, []string) {
 		}
 
 		for k, v := cr.Seek([]byte(from)); k != nil && bytes.Compare(k, []byte(to)) <= 0; k, v = cr.Next() {
+			limit--
+			if limit < 0 {
+				break
+			}
+			rsps = append(rsps, string(v))
+		}
+		return nil
+	})
+	return err, rsps
+}
+
+func retMakeUpData(limit int) []string {
+	ret := make([]string, 0)
+
+	for i := 0; i != limit; i++ {
+		dbc := dbcount{
+			time.Now().Add(time.Minute * (-1) * time.Duration(i)),
+			20,
+			(limit - i + 1) * 10,
+			limit - i,
+		}
+
+		bt, err := json.Marshal(dbc)
+		if err == nil {
+			ret = append(ret, string(bt))
+		}
+	}
+	return ret
+}
+
+func dbReadDb2LastDay(limit int) (error, []string) {
+	//	return nil, retMakeUpData(limit)
+
+	db, err := bolt.Open(boltdbname, 0600, nil)
+	if err != nil {
+		return err, nil
+	}
+	defer db.Close()
+
+	rsps := make([]string, 0)
+
+	tend := time.Now().Add(time.Hour * -24).Format(timekeyformat)
+
+	err = db.View(func(tx *bolt.Tx) error {
+		bt := tx.Bucket([]byte(`db2`))
+		if bt == nil {
+			return fmt.Errorf("db2 bucket dont exist")
+		}
+		cr := bt.Cursor()
+		if cr == nil {
+			return fmt.Errorf("cursor return nil")
+		}
+
+		for k, v := cr.Last(); k != nil && bytes.Compare(k, []byte(tend)) >= 0; k, v = cr.Prev() {
 			limit--
 			if limit < 0 {
 				break
@@ -169,7 +224,7 @@ func dbReadPingLast(limit int) (error, []string) {
 	return err, rsps
 }
 
-func dbReadPingLastHour(limit int) (error, []string) {
+func dbReadPingLastDay(limit int) (error, []string) {
 	db, err := bolt.Open(boltdbname, 0600, nil)
 	if err != nil {
 		return err, nil
@@ -178,7 +233,7 @@ func dbReadPingLastHour(limit int) (error, []string) {
 
 	rsps := make([]string, 0)
 
-	tend := time.Now().Add(time.Minute * -60 * 24).Format(timekeyformat)
+	tend := time.Now().Add(time.Hour * -24).Format(timekeyformat)
 
 	err = db.View(func(tx *bolt.Tx) error {
 		return tx.ForEach(func(name []byte, bt *bolt.Bucket) error {
