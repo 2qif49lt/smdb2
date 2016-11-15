@@ -17,6 +17,10 @@ monitor db2 service,use for huawei mas device.
 ####web interface information
 as follows
 ```go
+    r.HandleFunc("/db2/ws.go", wsDB2Handler)
+    r.HandleFunc("/ping/ws.go", wsPingHandler)
+    r.HandleFunc("/chart/ping.go", pingChartHandler)
+    r.HandleFunc("/chart/db2.go", dbChartHandler)
     r.HandleFunc("/ping/last", pingLastHandler)
     r.HandleFunc("/ping/{tar}", pingHandler)
     r.HandleFunc("/db2/status", db2StatusHandler)
