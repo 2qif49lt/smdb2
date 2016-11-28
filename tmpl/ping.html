@@ -204,15 +204,17 @@
 
         function pushChartDataWithOutUpdate(chart,pingrsp){
             chart.data.labels.push(shortTime(pingrsp.t))
+            var bslice = false;
             if(chart.data.labels.length > displaynum){
                  chart.data.labels.splice(0, 1);  
+                 bslice = true;
             }
 
             chart.data.datasets.forEach(function(dataset, index) {
                 for (f in pingrsp){
                     if (dataset.label == f){
                         dataset.data.push(pingrsp[f]);
-                        if(chart.data.labels.length > displaynum){
+                        if(bslice){
                             dataset.data.splice(0, 1);  
                         }
                         break;

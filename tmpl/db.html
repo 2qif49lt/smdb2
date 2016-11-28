@@ -116,6 +116,11 @@
                         hover: {
                             mode: 'dataset'
                         },
+                        elements: { 
+                            point: { 
+                                radius: 2 ,
+                            } 
+                        },
                         scales: {
                             xAxes: [{
                                 display: true,
@@ -173,15 +178,18 @@
 
 		function pushChartDataWithOutUpdate(chart,dbrsp){
             chart.data.labels.push(shortTime(dbrsp.t))
+            var bslice = false;
+
             if(chart.data.labels.length > displaynum){
-                 chart.data.labels.splice(0, 1);  
+                chart.data.labels.splice(0, 1);  
+                bslice = true;
             }
 
             chart.data.datasets.forEach(function(dataset, index) {
                 for (f in dbrsp){
                     if (dataset.label == f){
                         dataset.data.push(dbrsp[f]);
-                        if(chart.data.labels.length > displaynum){
+                        if(bslice){
                             dataset.data.splice(0, 1);  
                         }
                         break;
