@@ -205,6 +205,7 @@
         function pushChartDataWithOutUpdate(chart,pingrsp){
             chart.data.labels.push(shortTime(pingrsp.t))
             var bslice = false;
+            
             if(chart.data.labels.length > displaynum){
                  chart.data.labels.splice(0, 1);  
                  bslice = true;
