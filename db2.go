@@ -34,10 +34,12 @@ func readCount(conn string) (*dbcount, error) {
 	defer db.Close()
 
 	date := time.Now().Format(`0102`)
+	newyear := fmt.Sprintf("%d-01-01", time.Now().Year())
+
 	sql := fmt.Sprintf(`select * from (select count(*)  from TBL_SMSendTask),
-		(select count(*)  from TBL_SMRESULT_%s where Recv_Status = '0' or Recv_Status = '2') ,
-		(select count(*)  from TBL_SMRESULT_%s where Recv_Status != '0' and Recv_Status != '2');`,
-		date, date)
+		(select count(*)  from TBL_SMRESULT_%s where sendtime>'%s' and (Recv_Status = '0' or Recv_Status = '2')) ,
+		(select count(*)  from TBL_SMRESULT_%s where sendtime>'%s' and (Recv_Status != '0' and Recv_Status != '2'));`,
+		date, newyear, date, newyear)
 	st, err := db.Prepare(sql)
 	if err != nil {
 		return nil, err
